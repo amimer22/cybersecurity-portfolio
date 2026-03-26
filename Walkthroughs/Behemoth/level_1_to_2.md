@@ -8,6 +8,7 @@ It documents the full thought process, including failed attempts and debugging, 
 
 ## Initial Analysis
 when executing './behemoth1' u see that it asks for a password.
+
 using ltrace to track library calls and find out more
 ```bash
 behemoth1@behemoth:/behemoth$ ltrace ./behemoth1
@@ -20,7 +21,8 @@ Sorry.
 )                                                                                        = 31
 +++ exited (status 0) +++
 ```
-we notice that it calls a gets function and its giving us the adress for where the start of our input through gets()
+we notice that it calls a gets function and its giving us the adress for where the start of our input through gets().
+
 its not calling any other functions as strcpy()
 
 using strings to get some more data about it
@@ -45,6 +47,7 @@ GCC: (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0
 crt1.o
 ```
 all the functions used in the program should be mentioned just like puts gets printf 
+
 so the program is not trying any comparaison, any password you enter will give the same output
 
 executing the binary to notice what happens when entering a large value
