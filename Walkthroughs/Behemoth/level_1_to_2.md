@@ -1,5 +1,6 @@
 # Behemoth Level 1 → 2
 ## Note
+This walkthrough is based on challenges from [OverTheWire](https://overthewire.org).
 
 This is not a straight-to-the-point solution.  
 It documents the full thought process, including failed attempts and debugging, to focus on understanding rather than just solving.
