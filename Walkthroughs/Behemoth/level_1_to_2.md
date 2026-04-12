@@ -118,7 +118,57 @@ the vulnerability here is in the gets() function, it doesn't check the buffer si
 
 you can read more about it in https://cwe.mitre.org/data/definitions/242.html
 ## First Attempts
+we create a breakpoint at    0x080491b7 <+49>:	leave
 
+we execute the program and counting 0x44 in decimal is 68 bytes so 68 bytes of buffer $ebp-0x44 + 4 bytes of $ebp + 4 bytes of return adress $ebp+4. all that gives us 76 bytes
+
+we check the start of stack pointer $esp and $ebp 
+
+```bash 
+(gdb) break *0x080491b7
+Breakpoint 1 at 0x80491b7
+(gdb) run 
+Starting program: /behemoth/behemoth1 
+Download failed: Permission denied.  Continuing without separate debug info for system-supplied DSO at 0xf7fc7000.
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+Password: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Authentication failure.
+Sorry.
+
+Breakpoint 1, 0x080491b7 in main ()
+(gdb) x/25x $esp
+0xffffd234:	0x41414100	0x41414141	0x41414141	0x41414141
+0xffffd244:	0x41414141	0x41414141	0x41414141	0x41414141
+0xffffd254:	0x41414141	0x41414141	0x41414141	0x41414141
+0xffffd264:	0x41414141	0x41414141	0x41414141	0x41414141
+0xffffd274:	0x41414141	0x41414141	0x41414141	0x00000041
+0xffffd284:	0xffffd334	0xffffd33c	0xffffd2a0	0xf7fade34
+0xffffd294:	0x0804909d
+(gdb) x/25x $ebp
+0xffffd278:	0x41414141	0x41414141	0x00000041	0xffffd334
+0xffffd288:	0xffffd33c	0xffffd2a0	0xf7fade34	0x0804909d
+0xffffd298:	0x00000001	0xffffd334	0xf7fade34	0xffffd33c
+0xffffd2a8:	0xf7ffcb60	0x00000000	0xb00a04e2	0xfb97eef2
+0xffffd2b8:	0x00000000	0x00000000	0x00000000	0xf7ffcb60
+0xffffd2c8:	0x00000000	0xf99a1700	0xf7ffda20	0xf7da1c46
+0xffffd2d8:	0xf7fade34
+(gdb) x/25x $ebp-0x44
+0xffffd234:	0x41414100	0x41414141	0x41414141	0x41414141
+0xffffd244:	0x41414141	0x41414141	0x41414141	0x41414141
+0xffffd254:	0x41414141	0x41414141	0x41414141	0x41414141
+0xffffd264:	0x41414141	0x41414141	0x41414141	0x41414141
+0xffffd274:	0x41414141	0x41414141	0x41414141	0x00000041
+0xffffd284:	0xffffd334	0xffffd33c	0xffffd2a0	0xf7fade34
+0xffffd294:	0x0804909d
+```
+we notice that it execeded $ebp+4 by one byte in  0xffffd278:	0x41414141	0x41414141	0x00000041 
+
+and the start of stack at $esp 0xffffd234:	0x41414100	0x41414141 notice that 0x00 null byte is weird
+
+i suspect that this is happening because of this line :    0x08049199 <+19>:	lea    -0x43(%ebp),%eax
+
+it's loading 0x43 bytes instead of 0x44 so out next input will contain 75 bytes not 76 
 ## Debugging
 
 ## Exploit
